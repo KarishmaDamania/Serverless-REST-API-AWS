@@ -1,5 +1,7 @@
 'use strict';
-const DynamoDB = require("aws-sdk/clients/dynamodb");
+// const DynamoDB = require("aws-sdk/clients/dynamodb");
+import { DynamoDB } from 'aws-sdk'
+import { APIGatewayEvent, Context, APIGatewayProxyCallback } from 'aws-lambda'
 const documentClient = new DynamoDB.DocumentClient({
   region: 'us-east-1',
   maxRetries: 3,
@@ -7,6 +9,7 @@ const documentClient = new DynamoDB.DocumentClient({
     timeout: 5000
   }
 })
+
 const NOTES_TABLE_NAME = process.env.NOTES_TABLE_NAME;
 
 const send = (statusCode, data) =>{
@@ -16,12 +19,12 @@ const send = (statusCode, data) =>{
   }
 }
 
-module.exports.createNote = async (event, context, callback) => {
+export const createNote = async (event: APIGatewayEvent , context: Context , callback: APIGatewayProxyCallback) => {
   context.callbackWaitsForEmptyEventLoop = false
-  let data = JSON.parse(event.body)
+  let data = JSON.parse(event.body!)
   try {
     const params = {
-      TableName: NOTES_TABLE_NAME,
+      TableName: NOTES_TABLE_NAME!,
       Item: {
         notesId: data.id,
         title: data.title,
@@ -37,13 +40,13 @@ module.exports.createNote = async (event, context, callback) => {
   }
 };
 
-module.exports.updateNote = async (event, context, callback) => {
-  let notesId = event.pathParameters.id
+export const updateNote = async (event: APIGatewayEvent , context: Context , callback: APIGatewayProxyCallback) => {
+  let notesId = event.pathParameters?.id
   context.callbackWaitsForEmptyEventLoop = false
-  let data = JSON.parse(event.body)
+  let data = JSON.parse(event.body!)
   try{
     const params = {
-      TableName: NOTES_TABLE_NAME,
+      TableName: NOTES_TABLE_NAME!,
       Key: {
         notesId: notesId
       },
@@ -66,12 +69,12 @@ module.exports.updateNote = async (event, context, callback) => {
   }
 };
 
-module.exports.deleteNote = async (event, context, callback) => {
+export const deleteNote = async (event: APIGatewayEvent , context: Context , callback: APIGatewayProxyCallback) => {
   context.callbackWaitsForEmptyEventLoop = false
-  let notesId = event.pathParameters.id
+  let notesId = event.pathParameters?.id
   try {
     const params = {
-      TableName: NOTES_TABLE_NAME,
+      TableName: NOTES_TABLE_NAME!,
       Key: {
         notesId: notesId
       }
@@ -84,11 +87,11 @@ module.exports.deleteNote = async (event, context, callback) => {
   }
 };
 
-module.exports.getAllNotes = async (event, context, callback) => {
+export const getAllNotes = async (event, context, callback) => {
   context.callbackWaitsForEmptyEventLoop = false
   try {
     const params = {
-      TableName: NOTES_TABLE_NAME,
+      TableName: NOTES_TABLE_NAME!,
     }
     const notes = await documentClient.scan(params).promise()
     callback(null, send(200, notes))

@@ -91,6 +91,7 @@ functions:
 
 plugins:
   - serverless-iam-roles-per-function
+  - serverless-plugin-typescript
 
 # you can add CloudFormation resource templates here
 resources:
